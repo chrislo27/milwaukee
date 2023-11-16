@@ -8,6 +8,7 @@ import com.beust.jcommander.ParameterException
 import paintbox.desktop.PaintboxDesktopLauncher
 import paintbox.logging.Logger
 import milwaukee.Milwaukee
+import milwaukee.MkeArguments
 import milwaukee.MkeGame
 import java.io.File
 
@@ -24,16 +25,16 @@ object DesktopLauncher {
 
         try {
             // Check for bad arguments but don't cause a full crash
-            JCommander.newBuilder().acceptUnknownOptions(false).addObject(MkeArguments()).build().parse(*args)
+            JCommander.newBuilder().acceptUnknownOptions(false).addObject(MkeDesktopArguments()).build().parse(*args)
         } catch (e: ParameterException) {
             println("WARNING: Failed to parse arguments. Check below for details and help documentation. You may have strange parse results from ignoring unknown options.\n")
             e.printStackTrace()
             println("\n\n")
-            printHelp(JCommander(MkeArguments()))
+            printHelp(JCommander(MkeDesktopArguments()))
             println("\n\n")
         }
 
-        val arguments = MkeArguments()
+        val arguments = MkeDesktopArguments()
         val jcommander = JCommander.newBuilder().acceptUnknownOptions(true).addObject(arguments).build()
         jcommander.parse(*args)
 
@@ -43,10 +44,10 @@ object DesktopLauncher {
         }
 
         val portableMode: Boolean = arguments.portableMode
-        Milwaukee.portableMode = portableMode // Has to be set before any calls to PRMania.MAIN_FOLDER!
+        MkeArguments.PortableModeFlags.portableMode = portableMode // Has to be set before any calls to PRMania.MAIN_FOLDER!
         if (portableMode) {
             if (!File("${Milwaukee.FOLDER_NAME}/").exists()) {
-                Milwaukee.possiblyNewPortableMode = true
+                MkeArguments.PortableModeFlags.possiblyNewPortableMode = true
             }
         }
 
@@ -58,7 +59,7 @@ object DesktopLauncher {
             )
         )
 
-        Milwaukee.logMissingLocalizations = arguments.logMissingLocalizations
+        MkeArguments.logMissingLocalizations = arguments.logMissingLocalizations
 
         PaintboxDesktopLauncher(app, arguments).editConfig {
             this.setAutoIconify(true)

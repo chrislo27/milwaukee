@@ -25,6 +25,7 @@ import paintbox.util.gdxutils.isControlDown
 import paintbox.util.gdxutils.isShiftDown
 import milwaukee.init.AssetRegistryLoadingScreen
 import milwaukee.init.InitialAssetLoader
+import paintbox.util.gdxutils.disposeQuietly
 import java.io.File
 
 
@@ -44,7 +45,7 @@ class MkeGame(paintboxSettings: PaintboxSettings)
     @Volatile
     var blockResolutionChanges: Boolean = false
     
-    lateinit var preferences: Preferences
+    lateinit var preferences: MkePreferences
         private set
     
     val allLocalizations: List<ILocalization> 
@@ -60,16 +61,16 @@ class MkeGame(paintboxSettings: PaintboxSettings)
         GLFW.glfwSetWindowAspectRatio(windowHandle, 16, 9)
         
         
-        preferences = Gdx.app.getPreferences("milwaukee")
+        val gdxPrefs = Gdx.app.getPreferences("milwaukee")
+        preferences = MkePreferences(this, gdxPrefs).apply { this.load() }
 
         (Gdx.graphics as Lwjgl3Graphics).window.setVisible(true)
 
         addFontsToCache(this.fontCache)
         
         AssetRegistry.addAssetLoader(InitialAssetLoader())
-        
+
         fun initializeScreens() {
-            
         }
         setScreen(AssetRegistryLoadingScreen(this).apply {
             onStart = {}
@@ -81,7 +82,7 @@ class MkeGame(paintboxSettings: PaintboxSettings)
             }
         })
         
-        if (Milwaukee.logMissingLocalizations) {
+        if (MkeArguments.logMissingLocalizations) {
             this.reloadableLocalizationInstances.forEach { it.logMissingLocalizations(false) }
         }
     }
@@ -89,6 +90,7 @@ class MkeGame(paintboxSettings: PaintboxSettings)
 
     override fun dispose() {
         super.dispose()
+        preferences.disposeQuietly()
     }
 
     fun attemptFullscreen() {
@@ -118,7 +120,7 @@ class MkeGame(paintboxSettings: PaintboxSettings)
     private fun handleFullscreenKeybinds(keycode: Int): Boolean {
         // Fullscreen shortcuts:
         // F11 - Toggle fullscreen
-        // Shift+F11 - Reset window to defaults (see PRMania constants)
+        // Shift+F11 - Reset window to defaults
         // Alt+Enter - Toggle fullscreen
         val ctrl = Gdx.input.isControlDown()
         val shift = Gdx.input.isShiftDown()
