@@ -1,4 +1,4 @@
-package milwaukee.utils
+package milwaukee.util
 
 import paintbox.util.Version
 

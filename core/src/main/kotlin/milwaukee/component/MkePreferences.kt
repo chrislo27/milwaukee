@@ -1,12 +1,13 @@
-package milwaukee
+package milwaukee.component
 
 import com.badlogic.gdx.Preferences
+import milwaukee.MkeGame
 import paintbox.prefs.KeyValue
 import paintbox.prefs.NewIndicator
 import paintbox.prefs.PaintboxPreferences
 
 
-class MkePreferences(main: MkeGame, prefs: Preferences) : PaintboxPreferences<MkeGame>(main, prefs) {
+class MkePreferences(main: MkeGame, prefs: Preferences) : PaintboxPreferences<MkeGame>(main, prefs), IMkeComponent {
 
     private val _allKeyValues: MutableList<KeyValue<*>> = mutableListOf()
     private val _allNewIndicators: MutableList<NewIndicator> = mutableListOf()
@@ -25,6 +26,10 @@ class MkePreferences(main: MkeGame, prefs: Preferences) : PaintboxPreferences<Mk
     }
 
     override fun getLastVersionKey(): String = PreferenceKeys.LAST_VERSION
+
+    override fun setStartupSettings(game: MkeGame) {
+//        MkeLocalePicker.attemptToSetNamedLocale(this.locale.getOrCompute())
+    }
 }
 
 object PreferenceKeys {

@@ -16,7 +16,7 @@ import paintbox.ui.area.Insets
 import paintbox.ui.border.SolidBorder
 import paintbox.ui.element.RectElement
 import milwaukee.MkeGame
-import milwaukee.MkeScreen
+import milwaukee.screen.MkeScreen
 
 class AssetRegistryLoadingScreen(main: MkeGame) : MkeScreen(main) {
 
