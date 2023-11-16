@@ -29,26 +29,29 @@ import paintbox.util.gdxutils.disposeQuietly
 import java.io.File
 
 
-class MkeGame(paintboxSettings: PaintboxSettings)
-    : PaintboxGame(paintboxSettings) {
+class MkeGame(paintboxSettings: PaintboxSettings) : PaintboxGame(paintboxSettings) {
 
     companion object {
+
         lateinit var instance: MkeGame
             private set
-        
+
         fun createPaintboxSettings(launchArguments: List<String>, logger: Logger, logToFile: File?): PaintboxSettings =
-                PaintboxSettings(launchArguments, logger, logToFile, Milwaukee.VERSION, Milwaukee.DEFAULT_SIZE,
-                        ResizeAction.ANY_SIZE, Milwaukee.MINIMUM_SIZE)
+            PaintboxSettings(
+                launchArguments, logger, logToFile, Milwaukee.VERSION, Milwaukee.DEFAULT_SIZE,
+                ResizeAction.ANY_SIZE, Milwaukee.MINIMUM_SIZE
+            )
     }
 
     private var lastWindowed: WindowSize = Milwaukee.DEFAULT_SIZE.copy()
+
     @Volatile
     var blockResolutionChanges: Boolean = false
-    
+
     lateinit var preferences: MkePreferences
         private set
-    
-    val allLocalizations: List<ILocalization> 
+
+    val allLocalizations: List<ILocalization>
         get() = this.reloadableLocalizationInstances
 
     override fun getTitle(): String = "${Milwaukee.TITLE} ${Milwaukee.VERSION}"
@@ -59,15 +62,15 @@ class MkeGame(paintboxSettings: PaintboxSettings)
         this.reloadableLocalizationInstances = listOf(Localization)
         val windowHandle = (Gdx.graphics as Lwjgl3Graphics).window.windowHandle
         GLFW.glfwSetWindowAspectRatio(windowHandle, 16, 9)
-        
-        
+
+
         val gdxPrefs = Gdx.app.getPreferences("milwaukee")
         preferences = MkePreferences(this, gdxPrefs).apply { this.load() }
 
         (Gdx.graphics as Lwjgl3Graphics).window.setVisible(true)
 
         addFontsToCache(this.fontCache)
-        
+
         AssetRegistry.addAssetLoader(InitialAssetLoader())
 
         fun initializeScreens() {
@@ -81,12 +84,12 @@ class MkeGame(paintboxSettings: PaintboxSettings)
                 null
             }
         })
-        
+
         if (MkeArguments.logMissingLocalizations) {
             this.reloadableLocalizationInstances.forEach { it.logMissingLocalizations(false) }
         }
     }
-    
+
 
     override fun dispose() {
         super.dispose()
@@ -155,21 +158,23 @@ class MkeGame(paintboxSettings: PaintboxSettings)
 
     private data class FontFamily(val filenameSuffix: String, val idSuffix: String) {
         companion object {
+
             val REGULAR = FontFamily("Regular", "")
             val ITALIC = FontFamily("Italic", "ITALIC")
             val BOLD = FontFamily("Bold", "BOLD")
             val BOLD_ITALIC = FontFamily("BoldItalic", "BOLD_ITALIC")
             val LIGHT = FontFamily("Light", "LIGHT")
             val LIGHT_ITALIC = FontFamily("LightItalic", "LIGHT_ITALIC")
-            
+
             val regularItalicBoldBoldItalic: List<FontFamily> = listOf(REGULAR, ITALIC, BOLD, BOLD_ITALIC)
-            val regularItalicBoldBoldItalicLightLightItalic: List<FontFamily> = listOf(REGULAR, ITALIC, BOLD, BOLD_ITALIC, LIGHT, LIGHT_ITALIC)
+            val regularItalicBoldBoldItalicLightLightItalic: List<FontFamily> =
+                listOf(REGULAR, ITALIC, BOLD, BOLD_ITALIC, LIGHT, LIGHT_ITALIC)
         }
-        
+
         fun toFullFilename(familyName: String, fileExt: String): String {
             return "$familyName-$filenameSuffix.$fileExt"
         }
-        
+
         fun toID(fontIDPrefix: String, isBordered: Boolean): String {
             var id = fontIDPrefix
             if (idSuffix.isNotEmpty()) id += "_$idSuffix"
@@ -177,7 +182,7 @@ class MkeGame(paintboxSettings: PaintboxSettings)
             return id
         }
     }
-    
+
     private fun addFontsToCache(cache: FontCache) {
         val emulatedSize = paintboxSettings.emulatedSize
         fun makeParam() = FreeTypeFontGenerator.FreeTypeFontParameter().apply {
@@ -202,43 +207,48 @@ class MkeGame(paintboxSettings: PaintboxSettings)
         val defaultFontSize = 20
 
         fun addFontFamily(
-                familyName: String, fontIDPrefix: String = familyName, fileExt: String = "ttf",
-                fontFamilies: List<FontFamily> = FontFamily.regularItalicBoldBoldItalic,
-                fontSize: Int = defaultFontSize, borderWidth: Float = 1.5f,
-                folderName: String = familyName,
-                hinting: FreeTypeFontGenerator.Hinting? = null, generateBordered: Boolean = true,
-                scaleToReferenceSize: Boolean = false, referenceSize: WindowSize = WindowSize(1280, 720),
-                afterLoadFunc: PaintboxFontFreeType.(BitmapFont) -> Unit = defaultAfterLoad,
+            familyName: String, fontIDPrefix: String = familyName, fileExt: String = "ttf",
+            fontFamilies: List<FontFamily> = FontFamily.regularItalicBoldBoldItalic,
+            fontSize: Int = defaultFontSize, borderWidth: Float = 1.5f,
+            folderName: String = familyName,
+            hinting: FreeTypeFontGenerator.Hinting? = null, generateBordered: Boolean = true,
+            scaleToReferenceSize: Boolean = false, referenceSize: WindowSize = WindowSize(1280, 720),
+            afterLoadFunc: PaintboxFontFreeType.(BitmapFont) -> Unit = defaultAfterLoad,
         ) {
             fontFamilies.forEach { family ->
                 val fileHandle = Gdx.files.internal("fonts/${folderName}/${family.toFullFilename(familyName, fileExt)}")
                 cache[family.toID(fontIDPrefix, false)] = PaintboxFontFreeType(
+                    PaintboxFontParams(fileHandle, 1, 1f, scaleToReferenceSize, referenceSize),
+                    makeParam().apply {
+                        if (hinting != null) {
+                            this.hinting = hinting
+                        }
+                        this.size = fontSize
+                        this.borderWidth = 0f
+                    }).setAfterLoad(afterLoadFunc)
+                if (generateBordered) {
+                    cache[family.toID(fontIDPrefix, true)] = PaintboxFontFreeType(
                         PaintboxFontParams(fileHandle, 1, 1f, scaleToReferenceSize, referenceSize),
                         makeParam().apply {
                             if (hinting != null) {
                                 this.hinting = hinting
                             }
                             this.size = fontSize
-                            this.borderWidth = 0f
+                            this.borderWidth = borderWidth
                         }).setAfterLoad(afterLoadFunc)
-                if (generateBordered) {
-                    cache[family.toID(fontIDPrefix, true)] = PaintboxFontFreeType(
-                            PaintboxFontParams(fileHandle, 1, 1f, scaleToReferenceSize, referenceSize),
-                            makeParam().apply {
-                                if (hinting != null) {
-                                    this.hinting = hinting
-                                }
-                                this.size = fontSize
-                                this.borderWidth = borderWidth
-                            }).setAfterLoad(afterLoadFunc)
                 }
             }
         }
 
-        addFontFamily(familyName = "OpenSans", hinting = FreeTypeFontGenerator.Hinting.Full, scaleToReferenceSize = true, generateBordered = false, afterLoadFunc = { font ->
-            defaultAfterLoad.invoke(this, font)
-            font.data.blankLineScale = 0.25f
-        })
+        addFontFamily(
+            familyName = "OpenSans",
+            hinting = FreeTypeFontGenerator.Hinting.Full,
+            scaleToReferenceSize = true,
+            generateBordered = false,
+            afterLoadFunc = { font ->
+                defaultAfterLoad.invoke(this, font)
+                font.data.blankLineScale = 0.25f
+            })
     }
 
 
@@ -246,5 +256,5 @@ class MkeGame(paintboxSettings: PaintboxSettings)
     val fontOpenSansBold: PaintboxFont get() = fontCache["OpenSans_BOLD"]
     val fontOpenSansItalic: PaintboxFont get() = fontCache["OpenSans_ITALIC"]
     val fontOpenSansBoldItalic: PaintboxFont get() = fontCache["OpenSans_BOLD_ITALIC"]
-    
+
 }

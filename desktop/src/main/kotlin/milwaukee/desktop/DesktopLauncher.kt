@@ -15,7 +15,15 @@ import java.io.File
 object DesktopLauncher {
 
     private fun printHelp(jCommander: JCommander) {
-        println("${Milwaukee.TITLE} ${Milwaukee.VERSION}\n\n${StringBuilder().apply { jCommander.usageFormatter.usage(this) }}")
+        println(
+            "${Milwaukee.TITLE} ${Milwaukee.VERSION}\n\n${
+                StringBuilder().apply {
+                    jCommander.usageFormatter.usage(
+                        this
+                    )
+                }
+            }"
+        )
     }
 
     @JvmStatic
@@ -44,7 +52,8 @@ object DesktopLauncher {
         }
 
         val portableMode: Boolean = arguments.portableMode
-        MkeArguments.PortableModeFlags.portableMode = portableMode // Has to be set before any calls to PRMania.MAIN_FOLDER!
+        MkeArguments.PortableModeFlags.portableMode =
+            portableMode // Has to be set before any calls to PRMania.MAIN_FOLDER!
         if (portableMode) {
             if (!File("${Milwaukee.FOLDER_NAME}/").exists()) {
                 MkeArguments.PortableModeFlags.possiblyNewPortableMode = true

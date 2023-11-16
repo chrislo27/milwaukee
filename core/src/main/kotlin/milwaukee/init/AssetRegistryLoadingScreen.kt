@@ -18,8 +18,7 @@ import paintbox.ui.element.RectElement
 import milwaukee.MkeGame
 import milwaukee.MkeScreen
 
-class AssetRegistryLoadingScreen(main: MkeGame)
-    : MkeScreen(main) {
+class AssetRegistryLoadingScreen(main: MkeGame) : MkeScreen(main) {
 
     private enum class Substate {
         BEFORE_START,
@@ -33,7 +32,7 @@ class AssetRegistryLoadingScreen(main: MkeGame)
     }
     private val uiViewport: Viewport = FitViewport(camera.viewportWidth, camera.viewportHeight, camera)
     private val sceneRoot: SceneRoot = SceneRoot(uiViewport)
-    
+
     private val loadingBarProgress: FloatVar = FloatVar(0f)
 
     /**
@@ -53,20 +52,20 @@ class AssetRegistryLoadingScreen(main: MkeGame)
     var nextScreenProducer: (() -> Screen?) = { null }
 
     private var substate: Substate = Substate.BEFORE_START
-    
+
     init {
-        this.sceneRoot += Pane().apply { 
+        this.sceneRoot += Pane().apply {
             this.bounds.width.set(960f)
             this.bounds.height.set(36f)
             Anchor.BottomCentre.configure(this, offsetY = -64f)
-            
+
             val borderColor = Color.WHITE
             val borderSize = 4f
             this.border.set(Insets(borderSize))
             this.borderStyle.set(SolidBorder(borderColor))
             this.padding.set(Insets(borderSize))
-            
-            this += RectElement(borderColor).apply { 
+
+            this += RectElement(borderColor).apply {
                 this.bindWidthToParent(multiplierBinding = { loadingBarProgress.use() }) { 0f }
             }
         }
@@ -83,7 +82,7 @@ class AssetRegistryLoadingScreen(main: MkeGame)
             0f
         } else AssetRegistry.load(delta)
         this.loadingBarProgress.set(progress)
-        
+
         if (progress >= 1f) {
             if (substate == Substate.LOADING_ASSETS) {
                 substate = Substate.FINISHED_ASSETS
@@ -96,15 +95,15 @@ class AssetRegistryLoadingScreen(main: MkeGame)
                 }
             }
         }
-        
+
 
         // Start of rendering -------------------------------------------------------------------------------------
-        
+
         Gdx.gl.glClearColor(0f, 0f, 0f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        
+
         super.render(delta)
-        
+
         val batch = main.batch
         val camera = this.camera
         batch.projectionMatrix = camera.combined
