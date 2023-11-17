@@ -79,6 +79,7 @@ class MkeGame(paintboxSettings: PaintboxSettings) : PaintboxGame(paintboxSetting
             }
         })
 
+        // Handle arguments
         if (MkeArguments.logMissingLocalizations) {
             this.reloadableLocalizationInstances.forEach { it.logMissingLocalizations(false) }
         }
@@ -88,8 +89,9 @@ class MkeGame(paintboxSettings: PaintboxSettings) : PaintboxGame(paintboxSetting
     override fun dispose() {
         super.dispose()
 
-        preferences.disposeQuietly()
-        fonts.disposeQuietly()
+        // Dispose of components in reverse order
         windowSizing.disposeQuietly()
+        fonts.disposeQuietly()
+        preferences.disposeQuietly()
     }
 }
