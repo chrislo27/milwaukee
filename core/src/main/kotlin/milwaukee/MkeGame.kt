@@ -54,8 +54,7 @@ class MkeGame(paintboxSettings: PaintboxSettings) : PaintboxGame(paintboxSetting
         GLFW.glfwSetWindowAspectRatio(lwjgl3Graphics.window.windowHandle, 16, 9)
 
         // Add components
-        val gdxPrefs = Gdx.app.getPreferences("milwaukee")
-        preferences = MkePreferences(this, gdxPrefs).apply {
+        preferences = MkePreferences(this, Gdx.app.getPreferences("milwaukee")).apply {
             this.load()
             this.setStartupSettings(this@MkeGame)
             lwjgl3Graphics.window.setVisible(true)
